@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'page/splash_page.dart';
 import 'page/home_page.dart';
+import 'page/bangun_datar_page.dart';
+import 'page/about_page.dart';
 
 void main() {
   runApp(const LuasBangunDatarApp());
@@ -52,7 +55,14 @@ class LuasBangunDatarApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomePage(),
+
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashPage(),
+        '/home': (context) => const HomePage(),
+        '/bangun-datar': (context) => const BangunDatarPage(),
+        '/about': (context) => const AboutPage(),
+      },
     );
   }
 }

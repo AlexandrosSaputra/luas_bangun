@@ -1,722 +1,136 @@
 import 'package:flutter/material.dart';
-import '../controllers/luas_controller.dart';
-import '../models/bangun_datar.dart';
+import '../constants/app_colors.dart';
+import 'bangun_datar_page.dart';
+import 'about_page.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final LuasController controller = LuasController();
-
-  List<TextEditingController> inputControllers = [];
-  List<String?> inputErrors = [];
-  String bangunDipilih = 'Persegi';
-  double hasil = 0;
-  String? pesanError;
-  bool sudahHitung = false;
-
-  // ── Palet warna terpadu (satu keluarga ungu-hangat) ──────────
-  static const Color bgPage    = Color(0xFFF5F0FF);
-  static const Color bgHeader  = Color(0xFF1E1E2E);
-  static const Color bgCard    = Colors.white;
-  static const Color purple    = Color(0xFF7C6FA0);
-  static const Color purpleLight = Color(0xFFD4C8F0);
-  static const Color purpleDark  = Color(0xFF3A2E5A);
-  static const Color accentGreen = Color(0xFF06D6A0);
-  static const Color accentOrange = Color(0xFFFF8E53);
-  static const Color accentRed    = Color(0xFFFF6B6B);
-  static const Color textHint   = Color(0xFFA093C0);
-
-  static const Map<String, Color> bangunColors = {
-    'Persegi':         Color(0xFFFF8E53),
-    'Persegi Panjang': Color(0xFFFFB347),
-    'Segitiga':        Color(0xFF06D6A0),
-    'Lingkaran':       Color(0xFFFF6B6B),
-    'Trapesium':       Color(0xFF9B5DE5),
-    'Jajar Genjang':   Color(0xFF00BBF9),
-    'Belah Ketupat':   Color(0xFFFF6B9D),
-    'Layang-Layang':   Color(0xFFFFC300),
-  };
-
-  static const Map<String, String> bangunAssets = {
-    'Persegi':         'assets/images/persegi.png',
-    'Persegi Panjang': 'assets/images/persegi_panjang.png',
-    'Segitiga':        'assets/images/segitiga.png',
-    'Lingkaran':       'assets/images/lingkaran.png',
-    'Jajar Genjang':   'assets/images/jajar_genjang.png',
-    'Trapesium':       'assets/images/trapesium.png',
-    'Belah Ketupat':   'assets/images/belah_ketupat.png',
-    'Layang-Layang':   'assets/images/layang_layang.png',
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    _updateControllers();
-  }
-
-  void _updateControllers() {
-    for (var c in inputControllers) {
-      c.dispose();
-    }
-    final bangun = BangunDatar.daftar.firstWhere((b) => b.nama == bangunDipilih);
-    inputControllers = List.generate(bangun.labelInput.length, (_) => TextEditingController());
-    inputErrors = List.generate(bangun.labelInput.length, (_) => null);
-  }
-
-  void _onBangunChanged(String nama) {
-    setState(() {
-      bangunDipilih = nama;
-      _updateControllers();
-      hasil = 0;
-      pesanError = null;
-      sudahHitung = false;
-    });
-  }
-
-  // Validasi real-time per field
-  void _onInputChanged(int index, String value) {
-    setState(() {
-      if (value.isEmpty) {
-        inputErrors[index] = null;
-      } else {
-        final nilai = double.tryParse(value);
-        if (nilai == null) {
-          inputErrors[index] = 'Harus berupa angka';
-        } else if (nilai <= 0) {
-          inputErrors[index] = 'Harus lebih dari 0';
-        } else {
-          inputErrors[index] = null;
-        }
-      }
-    });
-  }
-
-  void hitung() {
-    bool adaError = false;
-    setState(() {
-      for (int i = 0; i < inputControllers.length; i++) {
-        final nilai = double.tryParse(inputControllers[i].text);
-        if (nilai == null || nilai <= 0) {
-          inputErrors[i] = 'Wajib diisi dengan angka positif';
-          adaError = true;
-        }
-      }
-    });
-    if (adaError) return;
-
-    final input = inputControllers.map((c) => double.parse(c.text)).toList();
-    final LuasResult result = controller.hitungLuas(bangunDipilih, input);
-
-    setState(() {
-      if (result.sukses) {
-        hasil = result.luas!;
-        pesanError = null;
-        sudahHitung = true;
-      } else {
-        hasil = 0;
-        pesanError = result.error;
-        sudahHitung = false;
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    for (var c in inputControllers) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final bangun = BangunDatar.daftar.firstWhere((b) => b.nama == bangunDipilih);
-    final bangunColor = bangunColors[bangunDipilih] ?? accentOrange;
-    final assetPath = bangunAssets[bangunDipilih];
-
     return Scaffold(
-      backgroundColor: bgPage,
+      backgroundColor: AppColors.bgPage,
       body: Column(
         children: [
-
-          // ── Header gelap + chip scrollable ──────────────────
-          Container(
-            color: bgHeader,
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFFFD166),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.star_rounded,
-                            color: bgHeader,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'Hitung Luas Bangun Datar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(
-                    height: 88,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(left: 16, right: 8, bottom: 14),
-                      itemCount: BangunDatar.daftar.length,
-                      itemBuilder: (context, index) {
-                        final b = BangunDatar.daftar[index];
-                        final isActive = b.nama == bangunDipilih;
-                        final color = bangunColors[b.nama] ?? accentOrange;
-                        final asset = bangunAssets[b.nama];
-
-                        return GestureDetector(
-                          onTap: () => _onBangunChanged(b.nama),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isActive ? color : Colors.white.withOpacity(0.10),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isActive ? color : Colors.white.withOpacity(0.18),
-                                width: 1.5,
-                              ),
-                              boxShadow: isActive
-                                  ? [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 3))]
-                                  : [],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 30,
-                                  height: 30,
-                                  child: asset != null
-                                      ? Image.asset(
-                                          asset,
-                                          fit: BoxFit.contain,
-                                          color: Colors.white,
-                                          colorBlendMode: BlendMode.srcIn,
-                                        )
-                                      : Icon(_ikonBangun(b.nama), color: Colors.white, size: 26),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  b.nama,
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Body ────────────────────────────────────────────
+          _buildHeader(context),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 4),
-
-                  // Placeholder / ilustrasi bangun terpilih
-                  if (!sudahHitung)
-                    _buildPlaceholder(bangun, bangunColor, assetPath),
-
-                  // Hasil (muncul setelah hitung)
-                  if (sudahHitung)
-                    _buildHasil(bangunColor),
-
-                  const SizedBox(height: 14),
-
-                  // Card input
-                  _buildInputCard(bangun, bangunColor),
-
-                  const SizedBox(height: 14),
-
-                  // Error global
-                  if (pesanError != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFEEEE),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: accentRed.withOpacity(0.4)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline_rounded, color: accentRed, size: 18),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(pesanError!, style: TextStyle(color: accentRed, fontSize: 13)),
-                          ),
-                        ],
-                      ),
+                  const SizedBox(height: 8),
+                  _buildWelcomeCard(),
+                  const SizedBox(height: 20),
+                  _buildSectionLabel('Pilih Kategori'),
+                  const SizedBox(height: 12),
+                  _buildMenuCard(
+                    context,
+                    title: 'Bangun Datar',
+                    subtitle: 'Hitung luas persegi, segitiga, lingkaran, dan lainnya',
+                    icon: Icons.square_foot_rounded,
+                    color: AppColors.accentOrange,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const BangunDatarPage()),
                     ),
-
-                  const SizedBox(height: 14),
-
-                  // Tombol hitung
-                  GestureDetector(
-                    onTap: hitung,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      decoration: BoxDecoration(
-                        color: bangunColor,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: bangunColor.withOpacity(0.35),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.calculate_rounded, color: Colors.white, size: 22),
-                          SizedBox(width: 8),
-                          Text(
-                            'Hitung Sekarang!',
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                    ),
+                    badge: null,
                   ),
-
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
+                  _buildMenuCard(
+                    context,
+                    title: 'Bangun Ruang',
+                    subtitle: 'Volume & luas permukaan kubus, bola, tabung, dll',
+                    icon: Icons.view_in_ar_rounded,
+                    color: AppColors.purple,
+                    onTap: null,
+                    badge: 'Coming Soon',
+                  ),
+                  const SizedBox(height: 28),
+                  _buildSectionLabel('Lainnya'),
+                  const SizedBox(height: 12),
+                  _buildAboutRow(context),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
           ),
-
-          _buildBottomNav(),
         ],
       ),
     );
   }
 
-  // ── Placeholder sebelum hitung ─────────────────────────────
-  Widget _buildPlaceholder(dynamic bangun, Color color, String? assetPath) {
+  // ── Header ────────────
+  Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-      decoration: BoxDecoration(
-        color: bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: purpleLight, width: 1.5),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: assetPath != null
-                ? Image.asset(assetPath, fit: BoxFit.contain, color: color, colorBlendMode: BlendMode.srcIn)
-                : Icon(_ikonBangun(bangunDipilih), color: color, size: 40),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            bangunDipilih,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: purpleDark),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Masukkan ukuran di bawah,\nlalu tekan Hitung!',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: textHint, height: 1.5),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Kartu hasil ────────────────────────────────────────────
-  Widget _buildHasil(Color color) {
-    final hasilStr = hasil % 1 == 0 ? hasil.toInt().toString() : hasil.toStringAsFixed(2);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accentGreen, width: 2),
-        boxShadow: [
-          BoxShadow(color: accentGreen.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-            decoration: BoxDecoration(
-              color: accentGreen.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.check_circle_rounded, color: accentGreen, size: 16),
-                const SizedBox(width: 5),
-                Text(
-                  'Hasil Luas',
-                  style: TextStyle(
-                    color: const Color(0xFF0F6E56),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: hasilStr,
-                  style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: purpleDark),
-                ),
-                const TextSpan(
-                  text: ' cm²',
-                  style: TextStyle(fontSize: 18, color: textHint),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Card input dengan validasi real-time ───────────────────
-  Widget _buildInputCard(dynamic bangun, Color bangunColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: purpleLight, width: 1.5),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header section — hierarki tipografi jelas
-          Row(
-            children: [
-              Icon(Icons.edit_rounded, color: bangunColor, size: 18),
-              const SizedBox(width: 8),
-              const Text(
-                'Masukkan Ukuran',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: purpleDark),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: bgPage,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'satuan: cm',
-                  style: TextStyle(fontSize: 11, color: textHint, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          ...bangun.labelInput.asMap().entries.map((entry) {
-            int index = entry.key;
-            String label = entry.value;
-            final hasError = inputErrors.length > index && inputErrors[index] != null;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Label besar + satuan — hierarki jelas
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6, left: 2),
-                    child: Row(
-                      children: [
-                        Text(
-                          label,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: purpleDark,
-                          ),
-                        ),
-                        const Text(
-                          '  (cm)',
-                          style: TextStyle(fontSize: 12, color: textHint),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextField(
-                    controller: inputControllers[index],
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (v) => _onInputChanged(index, v),
-                    style: TextStyle(
-                      color: hasError ? accentRed : purpleDark,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 15,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Contoh: 10',
-                      hintStyle: TextStyle(color: textHint.withOpacity(0.6), fontSize: 14),
-                      prefixIcon: Icon(
-                        Icons.straighten_rounded,
-                        color: hasError ? accentRed : bangunColor,
-                        size: 20,
-                      ),
-                      // Feedback real-time di suffix
-                      suffixIcon: inputControllers.length > index && inputControllers[index].text.isNotEmpty
-                          ? Icon(
-                              hasError ? Icons.cancel_rounded : Icons.check_circle_rounded,
-                              color: hasError ? accentRed : accentGreen,
-                              size: 20,
-                            )
-                          : null,
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: hasError ? accentRed.withOpacity(0.5) : purpleLight,
-                          width: 1.5,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: hasError ? accentRed : bangunColor,
-                          width: 2,
-                        ),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: accentRed, width: 1.5),
-                      ),
-                      filled: true,
-                      fillColor: hasError ? const Color(0xFFFFF0F0) : bgPage,
-                    ),
-                  ),
-                  // Pesan error per field
-                  if (hasError)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 4),
-                      child: Text(
-                        inputErrors[index]!,
-                        style: TextStyle(fontSize: 11, color: accentRed),
-                      ),
-                    ),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: bgCard,
-        boxShadow: [
-          BoxShadow(
-            color: purpleDark.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
+      color: AppColors.bgHeader,
       child: SafeArea(
-        top: false,
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
           child: Row(
             children: [
-
-              // ── Tab Bangun Datar (AKTIF) ──────────────────────
-              Expanded(
-                child: Container(
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: purpleDark,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 32,
-                        height: 24,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Positioned(
-                              left: 0,
-                              top: 0,
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              right: 0,
-                              top: 4,
-                              child: Container(
-                                width: 15,
-                                height: 15,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFFFD166),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Bangun Datar',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  color: AppColors.accentYellow,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.star_rounded,
+                  color: AppColors.bgHeader,
+                  size: 20,
                 ),
               ),
-
               const SizedBox(width: 12),
-
-              // ── Tab Bangun Ruang (COMING SOON) ────────────────
-              Expanded(
-                child: SizedBox(
-                  height: 72,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // Tab container — full size
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: bgPage,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: purpleLight, width: 1.5),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 32,
-                                height: 24,
-                                child: CustomPaint(
-                                  painter: _CubePainter(color: textHint),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              const Text(
-                                'Bangun Ruang',
-                                style: TextStyle(
-                                  color: textHint,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Luas Bangun Datar',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
                       ),
-
-                      // Badge Coming Soon
-                      Positioned(
-                        top: -10,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: accentRed,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: accentRed.withOpacity(0.35),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Text(
-                            'Coming Soon',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Pilih kategori untuk mulai berhitung',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
 
+              // Tombol About Us di header
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutPage()),
+                ),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.15),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.info_outline_rounded,
+                    color: Colors.white70,
+                    size: 20,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -724,80 +138,287 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  IconData _ikonBangun(String nama) {
-    switch (nama) {
-      case 'Persegi':        return Icons.crop_square_rounded;
-      case 'Persegi Panjang':return Icons.crop_landscape_rounded;
-      case 'Segitiga':       return Icons.change_history_rounded;
-      case 'Lingkaran':      return Icons.circle_outlined;
-      case 'Trapesium':      return Icons.tab_unselected_rounded;
-      case 'Jajar Genjang':  return Icons.crop_landscape_rounded;
-      case 'Belah Ketupat':  return Icons.diamond_outlined;
-      case 'Layang-Layang':  return Icons.diamond_outlined;
-      default:               return Icons.shape_line_rounded;
-    }
-  }
-}
-
-class _CubePainter extends CustomPainter {
-  final Color color;
-  const _CubePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
-      ..strokeJoin = StrokeJoin.round;
-
-    final paintFill = Paint()
-      ..color = color.withOpacity(0.15)
-      ..style = PaintingStyle.fill;
-
-    final w = size.width;
-    final h = size.height;
-
-    // Titik-titik kubus isometrik
-    final top    = Offset(w * 0.5,  0);
-    final midL   = Offset(0,        h * 0.35);
-    final midR   = Offset(w,        h * 0.35);
-    final midMid = Offset(w * 0.5,  h * 0.7);
-    final botL   = Offset(w * 0.12, h);
-    final botR   = Offset(w * 0.88, h);
-    final botMid = Offset(w * 0.5,  h);
-
-    // Sisi atas
-    final top_ = Path()
-      ..moveTo(top.dx, top.dy)
-      ..lineTo(midL.dx, midL.dy)
-      ..lineTo(midMid.dx, midMid.dy)
-      ..lineTo(midR.dx, midR.dy)
-      ..close();
-    canvas.drawPath(top_, paintFill);
-    canvas.drawPath(top_, paint);
-
-    // Sisi kiri
-    final left_ = Path()
-      ..moveTo(midL.dx, midL.dy)
-      ..lineTo(botL.dx, botL.dy)
-      ..lineTo(botMid.dx, botMid.dy)
-      ..lineTo(midMid.dx, midMid.dy)
-      ..close();
-    canvas.drawPath(left_, Paint()..color = color.withOpacity(0.08)..style = PaintingStyle.fill);
-    canvas.drawPath(left_, paint);
-
-    // Sisi kanan
-    final right_ = Path()
-      ..moveTo(midR.dx, midR.dy)
-      ..lineTo(botR.dx, botR.dy)
-      ..lineTo(botMid.dx, botMid.dy)
-      ..lineTo(midMid.dx, midMid.dy)
-      ..close();
-    canvas.drawPath(right_, Paint()..color = color.withOpacity(0.22)..style = PaintingStyle.fill);
-    canvas.drawPath(right_, paint);
+  // ── Welcome card ──────────────────────────────────────────────
+  Widget _buildWelcomeCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.purpleDark,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.purpleDark.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Selamat datang! 👋',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Hitung luas bangun datar dengan cepat dan mudah.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.65),
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Center(
+              child: Text(
+                '📐',
+                style: TextStyle(fontSize: 28),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  @override
-  bool shouldRepaint(_CubePainter old) => old.color != color;
+  // ── Label section ─────────────────────────────────────────────
+  Widget _buildSectionLabel(String label) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: AppColors.purpleDark,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.3,
+      ),
+    );
+  }
+
+  // ── Card menu utama ───────────────────────────────────────────
+  Widget _buildMenuCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback? onTap,
+    required String? badge,
+  }) {
+    final bool isDisabled = onTap == null;
+
+    return GestureDetector(
+      onTap: isDisabled
+          ? () => ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Fitur ini akan segera hadir!'),
+                  backgroundColor: AppColors.purpleDark,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              )
+          : onTap,
+      child: AnimatedOpacity(
+        opacity: isDisabled ? 0.72 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppColors.bgCard,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDisabled
+                  ? AppColors.purpleLight
+                  : color.withOpacity(0.35),
+              width: 1.5,
+            ),
+            boxShadow: isDisabled
+                ? []
+                : [
+                    BoxShadow(
+                      color: color.withOpacity(0.12),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(isDisabled ? 0.08 : 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: isDisabled ? AppColors.textHint : color,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: isDisabled
+                                ? AppColors.textHint
+                                : AppColors.purpleDark,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            color: AppColors.textHint,
+                            fontSize: 12,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isDisabled
+                        ? Icons.lock_outline_rounded
+                        : Icons.arrow_forward_ios_rounded,
+                    color: isDisabled ? AppColors.textHint : color,
+                    size: 16,
+                  ),
+                ],
+              ),
+
+              if (badge != null)
+                Positioned(
+                  top: -20,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentRed,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accentRed.withOpacity(0.35),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      badge,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Baris About Us ────────────────────────────────────────────
+  Widget _buildAboutRow(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AboutPage()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.purpleLight,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.accentGreen.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.accentGreen,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tentang Aplikasi',
+                    style: TextStyle(
+                      color: AppColors.purpleDark,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Versi, developer, dan informasi app',
+                    style: TextStyle(
+                      color: AppColors.textHint,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppColors.textHint,
+              size: 14,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
