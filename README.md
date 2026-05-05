@@ -140,9 +140,10 @@ Project ini dibuat untuk:
 
 ## 👨‍💻 Author
 
-* Nama: (Isi nama kamu)
-* Kelas: (Isi kelas)
-* Mata Kuliah: Pemrograman Mobile / Flutter
+* Nama: Moch. Daniyal Farich Alfarisi, Alexandros Saputra, Mohammad Firdausi Hadi Pramono
+* NBI: 1462300176, 1462300235, 1462300239
+* Kelas: S
+* Mata Kuliah: Pengembangan Aplikasi Bergerak
 
 ---
 

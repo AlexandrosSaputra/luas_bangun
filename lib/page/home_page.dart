@@ -328,6 +328,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+
+          _buildBottomNav(),
         ],
       ),
     );
@@ -561,6 +563,167 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        color: bgCard,
+        boxShadow: [
+          BoxShadow(
+            color: purpleDark.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+          child: Row(
+            children: [
+
+              // ── Tab Bangun Datar (AKTIF) ──────────────────────
+              Expanded(
+                child: Container(
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: purpleDark,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 32,
+                        height: 24,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              child: Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              right: 0,
+                              top: 4,
+                              child: Container(
+                                width: 15,
+                                height: 15,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFFD166),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Bangun Datar',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // ── Tab Bangun Ruang (COMING SOON) ────────────────
+              Expanded(
+                child: SizedBox(
+                  height: 72,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // Tab container — full size
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: bgPage,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: purpleLight, width: 1.5),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 32,
+                                height: 24,
+                                child: CustomPaint(
+                                  painter: _CubePainter(color: textHint),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Bangun Ruang',
+                                style: TextStyle(
+                                  color: textHint,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Badge Coming Soon
+                      Positioned(
+                        top: -10,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: accentRed,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: accentRed.withOpacity(0.35),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Text(
+                            'Coming Soon',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   IconData _ikonBangun(String nama) {
     switch (nama) {
       case 'Persegi':        return Icons.crop_square_rounded;
@@ -574,4 +737,67 @@ class _HomePageState extends State<HomePage> {
       default:               return Icons.shape_line_rounded;
     }
   }
+}
+
+class _CubePainter extends CustomPainter {
+  final Color color;
+  const _CubePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeJoin = StrokeJoin.round;
+
+    final paintFill = Paint()
+      ..color = color.withOpacity(0.15)
+      ..style = PaintingStyle.fill;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Titik-titik kubus isometrik
+    final top    = Offset(w * 0.5,  0);
+    final midL   = Offset(0,        h * 0.35);
+    final midR   = Offset(w,        h * 0.35);
+    final midMid = Offset(w * 0.5,  h * 0.7);
+    final botL   = Offset(w * 0.12, h);
+    final botR   = Offset(w * 0.88, h);
+    final botMid = Offset(w * 0.5,  h);
+
+    // Sisi atas
+    final top_ = Path()
+      ..moveTo(top.dx, top.dy)
+      ..lineTo(midL.dx, midL.dy)
+      ..lineTo(midMid.dx, midMid.dy)
+      ..lineTo(midR.dx, midR.dy)
+      ..close();
+    canvas.drawPath(top_, paintFill);
+    canvas.drawPath(top_, paint);
+
+    // Sisi kiri
+    final left_ = Path()
+      ..moveTo(midL.dx, midL.dy)
+      ..lineTo(botL.dx, botL.dy)
+      ..lineTo(botMid.dx, botMid.dy)
+      ..lineTo(midMid.dx, midMid.dy)
+      ..close();
+    canvas.drawPath(left_, Paint()..color = color.withOpacity(0.08)..style = PaintingStyle.fill);
+    canvas.drawPath(left_, paint);
+
+    // Sisi kanan
+    final right_ = Path()
+      ..moveTo(midR.dx, midR.dy)
+      ..lineTo(botR.dx, botR.dy)
+      ..lineTo(botMid.dx, botMid.dy)
+      ..lineTo(midMid.dx, midMid.dy)
+      ..close();
+    canvas.drawPath(right_, Paint()..color = color.withOpacity(0.22)..style = PaintingStyle.fill);
+    canvas.drawPath(right_, paint);
+  }
+
+  @override
+  bool shouldRepaint(_CubePainter old) => old.color != color;
 }
