@@ -1,4 +1,4 @@
-# 📐 Aplikasi Luas Bangun Datar
+<img width="959" height="47" alt="image" src="https://github.com/user-attachments/assets/975f9301-500b-4af4-8221-1f9434699953" /># 📐 Aplikasi Luas Bangun Datar
 
 Aplikasi Flutter sederhana untuk menghitung luas berbagai bangun datar. Project ini dibuat untuk memenuhi tugas pembelajaran dasar pemrograman Dart dan Flutter.
 
@@ -67,34 +67,6 @@ lib/
 
 ---
 
-## 🧮 Rumus yang Digunakan
-
-### Persegi
-
-L = s^2
-
-### Persegi Panjang
-
-L = p \times l
-
-### Segitiga
-
-L = \frac{1}{2} \times a \times t
-
-### Lingkaran
-
-L = \pi r^2
-
-### Trapesium
-
-L = \frac{1}{2}(a + b)t
-
-### Belah Ketupat / Layang-Layang
-
-L = \frac{1}{2} d_1 \times d_2
-
----
-
 ## 🚀 Cara Menjalankan
 
 1. Pastikan Flutter sudah terinstall
@@ -113,11 +85,13 @@ L = \frac{1}{2} d_1 \times d_2
    ```bash
    flutter pub get
    ```
-5. Jalankan aplikasi:
+5. Jalankan android studio 16.0 Baklava (Resizeable)
 
-   ```bash
-   flutter run
-   ```
+6. flutter devices
+
+7. pastikan ada device android studio yang sudah divirtualkan
+
+8. jalankan flutter run
 
 ---
 
